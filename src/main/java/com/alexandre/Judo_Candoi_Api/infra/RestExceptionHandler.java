@@ -12,6 +12,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -77,6 +78,18 @@ public class RestExceptionHandler {
         ApiErrorDTO error = new ApiErrorDTO(
                 HttpStatus.NOT_FOUND.value(),
                 "NOT_FOUND",
+                ex.getMessage()
+        );
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+    }
+
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<ApiErrorDTO> handleNoResourceFound(NoResourceFoundException ex) {
+        ApiErrorDTO error = new ApiErrorDTO(
+                HttpStatus.NOT_FOUND.value(),
+                "NOT_FOUND",
+                "Recurso solicitado nao foi encontrado.",
                 ex.getMessage()
         );
 
