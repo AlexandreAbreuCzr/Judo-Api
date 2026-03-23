@@ -15,6 +15,8 @@ API em Spring Boot (Java 17) para alimentar o site institucional do Judo Candoi.
   - Cria lead de aula experimental.
 - `GET /api/v1/leads/experimental-class`
   - Lista leads gravados em banco.
+- `GET /api/v1/uploads/images/{id}` (ou `/api/v1/uploads/images/{id}/{nome-arquivo}`)
+  - Retorna imagem enviada no painel admin.
 
 ### Painel admin (protegido por senha em `X-Admin-Password`)
 - `GET /api/v1/admin/auth/check`
@@ -28,6 +30,8 @@ API em Spring Boot (Java 17) para alimentar o site institucional do Judo Candoi.
 - `POST /api/v1/admin/pride-students`
 - `PUT /api/v1/admin/pride-students/{id}`
 - `DELETE /api/v1/admin/pride-students/{id}`
+- `POST /api/v1/admin/uploads/images`
+  - Upload de imagem para uso em blog/alunos destaque/patrocinadores (persistido em banco).
 
 ### Conteudo publico mutavel no site
 - `blogPosts` em `GET /api/v1/site/content` vem dos posts ativos do blog
