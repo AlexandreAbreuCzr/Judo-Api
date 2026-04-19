@@ -71,16 +71,19 @@ function computeNextId(items) {
 function normalizeState(rawState, config) {
   const initialState = createInitialState(config);
   const parsed = rawState && typeof rawState === "object" ? rawState : {};
+  const parsedSiteSettings =
+    parsed.siteSettings && typeof parsed.siteSettings === "object" ? parsed.siteSettings : {};
+  const mergedSiteSettings = {
+    ...initialState.siteSettings,
+    ...parsedSiteSettings
+  };
 
   const state = {
     counters: {
       ...initialState.counters,
       ...(parsed.counters && typeof parsed.counters === "object" ? parsed.counters : {})
     },
-    siteSettings:
-      parsed.siteSettings && typeof parsed.siteSettings === "object"
-        ? parsed.siteSettings
-        : initialState.siteSettings,
+    siteSettings: mergedSiteSettings,
     leads: asArray(parsed.leads),
     blogPosts: asArray(parsed.blogPosts),
     prideStudents: asArray(parsed.prideStudents),

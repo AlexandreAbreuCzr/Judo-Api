@@ -30,7 +30,8 @@ export function createDefaultSiteSettings(config) {
     whatsappNumber: config.defaultWhatsappNumber,
     instagramHandle: config.defaultInstagramHandle,
     academyAddress: config.defaultAcademyAddress,
-    googleMapsEmbed: config.defaultGoogleMapsEmbed
+    googleMapsEmbed: config.defaultGoogleMapsEmbed,
+    schedules: STATIC_SCHEDULES.map((item) => ({ ...item }))
   };
 }
 

@@ -41,6 +41,23 @@ function normalizePrideStudent(student) {
   };
 }
 
+function normalizeScheduleItem(item) {
+  return {
+    day: typeof item?.day === "string" ? item.day : "",
+    time: typeof item?.time === "string" ? item.time : "",
+    audience: typeof item?.audience === "string" ? item.audience : "",
+    level: typeof item?.level === "string" ? item.level : ""
+  };
+}
+
+function resolveSchedules(settings) {
+  if (!Array.isArray(settings?.schedules) || settings.schedules.length === 0) {
+    return STATIC_SCHEDULES.map((item) => ({ ...item }));
+  }
+
+  return settings.schedules.map(normalizeScheduleItem);
+}
+
 export function buildSiteContent(settings, blogPosts, sponsors, prideStudents) {
   const whatsappUrl = `https://wa.me/${settings.whatsappNumber}?text=${encodeURIComponent(
     DEFAULT_WHATSAPP_MESSAGE
@@ -78,7 +95,7 @@ export function buildSiteContent(settings, blogPosts, sponsors, prideStudents) {
     testimonials: STATIC_TESTIMONIALS,
     trialTitle: settings.trialTitle,
     trialDescription: settings.trialDescription,
-    schedules: STATIC_SCHEDULES,
+    schedules: resolveSchedules(settings),
     blogPosts: blogPosts.map(normalizeBlogPost),
     sponsors: sponsors.map(normalizeSponsor),
     timeline: STATIC_TIMELINE,
