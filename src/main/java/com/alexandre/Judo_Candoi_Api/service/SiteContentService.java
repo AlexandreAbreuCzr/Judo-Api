@@ -104,10 +104,11 @@ public class SiteContentService {
                 settings.getTrialTitle(),
                 settings.getTrialDescription(),
                 List.of(
-                        new ScheduleItemDTO("Segunda e Quarta", "18:00 - 18:50", "Infantil", "Iniciante"),
-                        new ScheduleItemDTO("Segunda e Quarta", "19:00 - 20:00", "Juvenil", "Intermediario"),
-                        new ScheduleItemDTO("Terca e Quinta", "19:30 - 20:30", "Adulto", "Iniciante e avancado"),
-                        new ScheduleItemDTO("Sexta", "18:30 - 20:00", "Equipe de competicao", "Avancado")
+                        new ScheduleItemDTO("Segunda e Quarta", "17:30 - 18:30", "Infantil"),
+                        new ScheduleItemDTO("Terca e Quinta", "18:00 - 19:00", "Adolescente"),
+                        new ScheduleItemDTO("Terca e Quinta", "19:00 - 20:00", "Adultos"),
+                        new ScheduleItemDTO("Terca", "17:10", "Baby"),
+                        new ScheduleItemDTO("Sexta", "17:30", "Baby")
                 ),
                 blogPostService.findPublic(),
                 sponsorService.findPublic(),
