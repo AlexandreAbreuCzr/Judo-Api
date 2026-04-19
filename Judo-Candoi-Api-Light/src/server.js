@@ -153,7 +153,15 @@ function toSiteSettingsAdminResponse(settings) {
     whatsappNumber: settings.whatsappNumber,
     instagramHandle: settings.instagramHandle,
     academyAddress: settings.academyAddress,
-    googleMapsEmbed: settings.googleMapsEmbed
+    googleMapsEmbed: settings.googleMapsEmbed,
+    schedules: Array.isArray(settings.schedules)
+      ? settings.schedules.map((item) => ({
+          day: item.day,
+          time: item.time,
+          audience: item.audience,
+          level: item.level
+        }))
+      : []
   };
 }
 

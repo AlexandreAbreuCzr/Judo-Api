@@ -4,6 +4,7 @@ const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const PHONE_PATTERN = /^[0-9+()\-\s]{8,20}$/;
 
 const DEFAULT_OBJECTIVE = "Aula experimental";
+const MAX_SITE_SCHEDULE_ITEMS = 12;
 
 function isObject(value) {
   return value !== null && typeof value === "object" && !Array.isArray(value);
@@ -112,6 +113,73 @@ function assertPayloadObject(payload) {
   if (!isObject(payload)) {
     throw badRequest("Corpo da requisicao invalido.", "JSON invalido");
   }
+}
+
+function validateSiteSchedulesField(errors, payload) {
+  const schedules = payload.schedules;
+
+  if (!Array.isArray(schedules) || schedules.length === 0) {
+    addError(errors, "schedules", "Lista de treinos e obrigatoria");
+    return [];
+  }
+
+  if (schedules.length > MAX_SITE_SCHEDULE_ITEMS) {
+    addError(
+      errors,
+      "schedules",
+      `Lista de treinos deve ter no maximo ${MAX_SITE_SCHEDULE_ITEMS} itens`
+    );
+  }
+
+  const normalizedSchedules = [];
+
+  for (let index = 0; index < schedules.length; index += 1) {
+    const item = schedules[index];
+    const itemPath = `schedules[${index}]`;
+
+    if (!isObject(item)) {
+      addError(errors, itemPath, "Item de treino invalido");
+      continue;
+    }
+
+    const day = toTrimmedString(item.day);
+    const time = toTrimmedString(item.time);
+    const audience = toTrimmedString(item.audience);
+    const level = toTrimmedString(item.level);
+
+    if (day.length === 0) {
+      addError(errors, `${itemPath}.day`, "Dia e obrigatorio");
+    } else if (day.length > 80) {
+      addError(errors, `${itemPath}.day`, "Dia deve ter no maximo 80 caracteres");
+    }
+
+    if (time.length === 0) {
+      addError(errors, `${itemPath}.time`, "Horario e obrigatorio");
+    } else if (time.length > 80) {
+      addError(errors, `${itemPath}.time`, "Horario deve ter no maximo 80 caracteres");
+    }
+
+    if (audience.length === 0) {
+      addError(errors, `${itemPath}.audience`, "Turma e obrigatoria");
+    } else if (audience.length > 100) {
+      addError(errors, `${itemPath}.audience`, "Turma deve ter no maximo 100 caracteres");
+    }
+
+    if (level.length === 0) {
+      addError(errors, `${itemPath}.level`, "Nivel e obrigatorio");
+    } else if (level.length > 100) {
+      addError(errors, `${itemPath}.level`, "Nivel deve ter no maximo 100 caracteres");
+    }
+
+    normalizedSchedules.push({
+      day,
+      time,
+      audience,
+      level
+    });
+  }
+
+  return normalizedSchedules;
 }
 
 export function parsePositiveId(rawId) {
@@ -360,6 +428,7 @@ export function validateSiteSettingsUpdatePayload(payload) {
   assertPayloadObject(payload);
 
   const errors = {};
+  const normalizedSchedules = validateSiteSchedulesField(errors, payload);
 
   validateRequiredText(
     errors,
@@ -591,6 +660,7 @@ export function validateSiteSettingsUpdatePayload(payload) {
     whatsappNumber: payload.whatsappNumber.trim(),
     instagramHandle: payload.instagramHandle.trim(),
     academyAddress: payload.academyAddress.trim(),
-    googleMapsEmbed: payload.googleMapsEmbed.trim()
+    googleMapsEmbed: payload.googleMapsEmbed.trim(),
+    schedules: normalizedSchedules
   };
 }
