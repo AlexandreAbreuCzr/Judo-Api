@@ -108,6 +108,48 @@ function validateOptionalInteger(errors, payload, field) {
   }
 }
 
+function validateScheduleItems(errors, payload) {
+  const schedules = payload.schedules;
+
+  if (!Array.isArray(schedules) || schedules.length === 0) {
+    addError(errors, "schedules", "Informe ao menos um horario de treino");
+    return [];
+  }
+
+  if (schedules.length > 20) {
+    addError(errors, "schedules", "Informe no maximo 20 horarios de treino");
+  }
+
+  return schedules.map((schedule, index) => {
+    const item = isObject(schedule) ? schedule : {};
+    const normalized = {
+      day: toTrimmedString(item.day),
+      time: toTrimmedString(item.time),
+      audience: toTrimmedString(item.audience)
+    };
+
+    if (!normalized.day) {
+      addError(errors, `schedules[${index}].day`, "Dia do treino e obrigatorio");
+    } else if (normalized.day.length > 80) {
+      addError(errors, `schedules[${index}].day`, "Dia do treino deve ter no maximo 80 caracteres");
+    }
+
+    if (!normalized.time) {
+      addError(errors, `schedules[${index}].time`, "Horario do treino e obrigatorio");
+    } else if (normalized.time.length > 40) {
+      addError(errors, `schedules[${index}].time`, "Horario do treino deve ter no maximo 40 caracteres");
+    }
+
+    if (!normalized.audience) {
+      addError(errors, `schedules[${index}].audience`, "Turma do treino e obrigatoria");
+    } else if (normalized.audience.length > 80) {
+      addError(errors, `schedules[${index}].audience`, "Turma do treino deve ter no maximo 80 caracteres");
+    }
+
+    return normalized;
+  });
+}
+
 function assertPayloadObject(payload) {
   if (!isObject(payload)) {
     throw badRequest("Corpo da requisicao invalido.", "JSON invalido");
@@ -564,6 +606,8 @@ export function validateSiteSettingsUpdatePayload(payload) {
     "Link do mapa deve ter no maximo 600 caracteres"
   );
 
+  const schedules = validateScheduleItems(errors, payload);
+
   throwValidationIfNeeded(errors);
 
   return {
@@ -591,6 +635,7 @@ export function validateSiteSettingsUpdatePayload(payload) {
     whatsappNumber: payload.whatsappNumber.trim(),
     instagramHandle: payload.instagramHandle.trim(),
     academyAddress: payload.academyAddress.trim(),
-    googleMapsEmbed: payload.googleMapsEmbed.trim()
+    googleMapsEmbed: payload.googleMapsEmbed.trim(),
+    schedules
   };
 }

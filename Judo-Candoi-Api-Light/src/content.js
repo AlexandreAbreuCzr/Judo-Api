@@ -41,6 +41,28 @@ function normalizePrideStudent(student) {
   };
 }
 
+function normalizeSchedule(schedule) {
+  return {
+    day: typeof schedule?.day === "string" ? schedule.day.trim() : "",
+    time: typeof schedule?.time === "string" ? schedule.time.trim() : "",
+    audience: typeof schedule?.audience === "string" ? schedule.audience.trim() : ""
+  };
+}
+
+function normalizeSchedules(schedules) {
+  const normalized = Array.isArray(schedules)
+    ? schedules
+        .map(normalizeSchedule)
+        .filter((schedule) => schedule.day && schedule.time && schedule.audience)
+    : [];
+
+  if (normalized.length > 0) {
+    return normalized;
+  }
+
+  return STATIC_SCHEDULES.map(normalizeSchedule);
+}
+
 export function buildSiteContent(settings, blogPosts, sponsors, prideStudents) {
   const whatsappUrl = `https://wa.me/${settings.whatsappNumber}?text=${encodeURIComponent(
     DEFAULT_WHATSAPP_MESSAGE
@@ -78,7 +100,7 @@ export function buildSiteContent(settings, blogPosts, sponsors, prideStudents) {
     testimonials: STATIC_TESTIMONIALS,
     trialTitle: settings.trialTitle,
     trialDescription: settings.trialDescription,
-    schedules: STATIC_SCHEDULES,
+    schedules: normalizeSchedules(settings.schedules),
     blogPosts: blogPosts.map(normalizeBlogPost),
     sponsors: sponsors.map(normalizeSponsor),
     timeline: STATIC_TIMELINE,

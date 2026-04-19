@@ -1,9 +1,14 @@
 package com.alexandre.Judo_Candoi_Api.dto.admin;
 
+import com.alexandre.Judo_Candoi_Api.dto.site.ScheduleItemDTO;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import jakarta.validation.constraints.Min;
+
+import java.util.List;
 
 public record SiteSettingsUpdateDTO(
         @NotBlank(message = "Marca e obrigatoria")
@@ -104,6 +109,10 @@ public record SiteSettingsUpdateDTO(
 
         @NotBlank(message = "Link do mapa e obrigatorio")
         @Size(max = 600, message = "Link do mapa deve ter no maximo 600 caracteres")
-        String googleMapsEmbed
+        String googleMapsEmbed,
+
+        @NotEmpty(message = "Informe ao menos um horario de treino")
+        @Size(max = 20, message = "Informe no maximo 20 horarios de treino")
+        List<@Valid ScheduleItemDTO> schedules
 ) {
 }

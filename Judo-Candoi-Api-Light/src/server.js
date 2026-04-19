@@ -158,7 +158,8 @@ function toSiteSettingsAdminResponse(settings) {
     whatsappNumber: settings.whatsappNumber,
     instagramHandle: settings.instagramHandle,
     academyAddress: settings.academyAddress,
-    googleMapsEmbed: settings.googleMapsEmbed
+    googleMapsEmbed: settings.googleMapsEmbed,
+    schedules: settings.schedules
   };
 }
 

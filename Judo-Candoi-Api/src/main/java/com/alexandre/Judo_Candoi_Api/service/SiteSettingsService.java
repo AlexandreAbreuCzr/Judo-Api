@@ -2,16 +2,24 @@ package com.alexandre.Judo_Candoi_Api.service;
 
 import com.alexandre.Judo_Candoi_Api.dto.admin.SiteSettingsAdminResponseDTO;
 import com.alexandre.Judo_Candoi_Api.dto.admin.SiteSettingsUpdateDTO;
+import com.alexandre.Judo_Candoi_Api.dto.site.ScheduleItemDTO;
 import com.alexandre.Judo_Candoi_Api.model.SiteSettings;
 import com.alexandre.Judo_Candoi_Api.repository.SiteSettingsRepository;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 
 @Service
 public class SiteSettingsService {
 
     private final SiteSettingsRepository repository;
+    private final ObjectMapper objectMapper;
     private final String defaultWhatsappNumber;
     private final String defaultInstagramHandle;
     private final String defaultAcademyAddress;
@@ -19,12 +27,14 @@ public class SiteSettingsService {
 
     public SiteSettingsService(
             SiteSettingsRepository repository,
+            ObjectMapper objectMapper,
             @Value("${app.whatsapp.number:5546999999999}") String defaultWhatsappNumber,
             @Value("${app.instagram.handle:@judocandoi}") String defaultInstagramHandle,
             @Value("${app.academy.address:Avenida Central, 123 - Candoi/PR}") String defaultAcademyAddress,
             @Value("${app.google.maps.embed:https://www.google.com/maps?q=Candoi%20PR&output=embed}") String defaultGoogleMapsEmbed
     ) {
         this.repository = repository;
+        this.objectMapper = objectMapper;
         this.defaultWhatsappNumber = defaultWhatsappNumber;
         this.defaultInstagramHandle = defaultInstagramHandle;
         this.defaultAcademyAddress = defaultAcademyAddress;
@@ -65,7 +75,8 @@ public class SiteSettingsService {
                 normalize(dto.whatsappNumber()),
                 normalize(dto.instagramHandle()),
                 normalize(dto.academyAddress()),
-                normalize(dto.googleMapsEmbed())
+                normalize(dto.googleMapsEmbed()),
+                toSchedulesJson(normalizeSchedules(dto.schedules()))
         );
 
         return toDto(repository.save(settings));
@@ -103,8 +114,24 @@ public class SiteSettingsService {
                 defaultWhatsappNumber,
                 defaultInstagramHandle,
                 defaultAcademyAddress,
-                defaultGoogleMapsEmbed
+                defaultGoogleMapsEmbed,
+                toSchedulesJson(defaultSchedules())
         );
+    }
+
+    public List<ScheduleItemDTO> resolveSchedules(SiteSettings settings) {
+        String rawSchedules = settings.getSchedulesJson();
+
+        if (rawSchedules == null || rawSchedules.isBlank()) {
+            return defaultSchedules();
+        }
+
+        try {
+            ScheduleItemDTO[] parsedSchedules = objectMapper.readValue(rawSchedules, ScheduleItemDTO[].class);
+            return normalizeSchedules(Arrays.asList(parsedSchedules));
+        } catch (JsonProcessingException _error) {
+            return defaultSchedules();
+        }
     }
 
     private SiteSettingsAdminResponseDTO toDto(SiteSettings settings) {
@@ -134,8 +161,47 @@ public class SiteSettingsService {
                 settings.getWhatsappNumber(),
                 settings.getInstagramHandle(),
                 settings.getAcademyAddress(),
-                settings.getGoogleMapsEmbed()
+                settings.getGoogleMapsEmbed(),
+                resolveSchedules(settings)
         );
+    }
+
+    private List<ScheduleItemDTO> defaultSchedules() {
+        return List.of(
+                new ScheduleItemDTO("Segunda e Quarta", "17:30 - 18:30", "Infantil"),
+                new ScheduleItemDTO("Terca e Quinta", "18:00 - 19:00", "Adolescente"),
+                new ScheduleItemDTO("Terca e Quinta", "19:00 - 20:00", "Adultos"),
+                new ScheduleItemDTO("Terca", "17:10", "Baby"),
+                new ScheduleItemDTO("Sexta", "17:30", "Baby")
+        );
+    }
+
+    private List<ScheduleItemDTO> normalizeSchedules(List<ScheduleItemDTO> schedules) {
+        if (schedules == null || schedules.isEmpty()) {
+            return defaultSchedules();
+        }
+
+        List<ScheduleItemDTO> normalizedSchedules = schedules.stream()
+                .filter(Objects::nonNull)
+                .map(schedule -> new ScheduleItemDTO(
+                        normalize(schedule.day()),
+                        normalize(schedule.time()),
+                        normalize(schedule.audience())
+                ))
+                .filter(schedule -> !schedule.day().isBlank()
+                        && !schedule.time().isBlank()
+                        && !schedule.audience().isBlank())
+                .toList();
+
+        return normalizedSchedules.isEmpty() ? defaultSchedules() : normalizedSchedules;
+    }
+
+    private String toSchedulesJson(List<ScheduleItemDTO> schedules) {
+        try {
+            return objectMapper.writeValueAsString(schedules);
+        } catch (JsonProcessingException error) {
+            throw new IllegalStateException("Nao foi possivel serializar os horarios de treino.", error);
+        }
     }
 
     private String normalize(String value) {

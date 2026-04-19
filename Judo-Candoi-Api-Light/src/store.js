@@ -1,6 +1,6 @@
 ﻿import fs from "node:fs";
 import path from "node:path";
-import { createDefaultSiteSettings } from "./defaults.js";
+import { createDefaultSiteSettings, STATIC_SCHEDULES } from "./defaults.js";
 
 function nowIso() {
   return new Date().toISOString();
@@ -50,6 +50,22 @@ function asArray(value) {
   return Array.isArray(value) ? value : [];
 }
 
+function cloneScheduleItems(schedules) {
+  return schedules.map((schedule) => ({ ...schedule }));
+}
+
+function normalizeScheduleItems(value) {
+  const normalized = asArray(value)
+    .map((schedule) => ({
+      day: typeof schedule?.day === "string" ? schedule.day.trim() : "",
+      time: typeof schedule?.time === "string" ? schedule.time.trim() : "",
+      audience: typeof schedule?.audience === "string" ? schedule.audience.trim() : ""
+    }))
+    .filter((schedule) => schedule.day && schedule.time && schedule.audience);
+
+  return normalized.length > 0 ? normalized : cloneScheduleItems(STATIC_SCHEDULES);
+}
+
 function computeNextId(items) {
   if (!Array.isArray(items) || items.length === 0) {
     return 1;
@@ -91,6 +107,11 @@ function normalizeState(rawState, config) {
   if (!state.siteSettings?.id) {
     state.siteSettings = initialState.siteSettings;
   }
+
+  state.siteSettings = {
+    ...state.siteSettings,
+    schedules: normalizeScheduleItems(state.siteSettings.schedules)
+  };
 
   state.counters.lead = Math.max(
     Number.parseInt(state.counters.lead, 10) || 1,

@@ -87,6 +87,9 @@ public class SiteSettings {
     @Column(nullable = false, length = 600)
     private String googleMapsEmbed;
 
+    @Column(length = 4000)
+    private String schedulesJson;
+
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -121,7 +124,8 @@ public class SiteSettings {
             String whatsappNumber,
             String instagramHandle,
             String academyAddress,
-            String googleMapsEmbed
+            String googleMapsEmbed,
+            String schedulesJson
     ) {
         this.brandName = brandName;
         this.heroTitle = heroTitle;
@@ -148,6 +152,7 @@ public class SiteSettings {
         this.instagramHandle = instagramHandle;
         this.academyAddress = academyAddress;
         this.googleMapsEmbed = googleMapsEmbed;
+        this.schedulesJson = schedulesJson;
     }
 
     @PrePersist
@@ -266,6 +271,10 @@ public class SiteSettings {
         return googleMapsEmbed;
     }
 
+    public String getSchedulesJson() {
+        return schedulesJson;
+    }
+
     public void update(
             String brandName,
             String heroTitle,
@@ -291,7 +300,8 @@ public class SiteSettings {
             String whatsappNumber,
             String instagramHandle,
             String academyAddress,
-            String googleMapsEmbed
+            String googleMapsEmbed,
+            String schedulesJson
     ) {
         this.brandName = brandName;
         this.heroTitle = heroTitle;
@@ -318,5 +328,6 @@ public class SiteSettings {
         this.instagramHandle = instagramHandle;
         this.academyAddress = academyAddress;
         this.googleMapsEmbed = googleMapsEmbed;
+        this.schedulesJson = schedulesJson;
     }
 }

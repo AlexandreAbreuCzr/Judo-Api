@@ -103,13 +103,7 @@ public class SiteContentService {
                 ),
                 settings.getTrialTitle(),
                 settings.getTrialDescription(),
-                List.of(
-                        new ScheduleItemDTO("Segunda e Quarta", "17:30 - 18:30", "Infantil"),
-                        new ScheduleItemDTO("Terca e Quinta", "18:00 - 19:00", "Adolescente"),
-                        new ScheduleItemDTO("Terca e Quinta", "19:00 - 20:00", "Adultos"),
-                        new ScheduleItemDTO("Terca", "17:10", "Baby"),
-                        new ScheduleItemDTO("Sexta", "17:30", "Baby")
-                ),
+                siteSettingsService.resolveSchedules(settings),
                 blogPostService.findPublic(),
                 sponsorService.findPublic(),
                 List.of(
