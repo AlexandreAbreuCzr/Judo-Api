@@ -118,9 +118,19 @@ function assertPayloadObject(payload) {
 function validateSiteSchedulesField(errors, payload) {
   const schedules = payload.schedules;
 
+  if (schedules === undefined || schedules === null) {
+    return {
+      hasSchedules: false,
+      normalizedSchedules: []
+    };
+  }
+
   if (!Array.isArray(schedules) || schedules.length === 0) {
     addError(errors, "schedules", "Lista de treinos e obrigatoria");
-    return [];
+    return {
+      hasSchedules: true,
+      normalizedSchedules: []
+    };
   }
 
   if (schedules.length > MAX_SITE_SCHEDULE_ITEMS) {
@@ -179,7 +189,10 @@ function validateSiteSchedulesField(errors, payload) {
     });
   }
 
-  return normalizedSchedules;
+  return {
+    hasSchedules: true,
+    normalizedSchedules
+  };
 }
 
 export function parsePositiveId(rawId) {
@@ -428,7 +441,7 @@ export function validateSiteSettingsUpdatePayload(payload) {
   assertPayloadObject(payload);
 
   const errors = {};
-  const normalizedSchedules = validateSiteSchedulesField(errors, payload);
+  const { hasSchedules, normalizedSchedules } = validateSiteSchedulesField(errors, payload);
 
   validateRequiredText(
     errors,
@@ -661,6 +674,6 @@ export function validateSiteSettingsUpdatePayload(payload) {
     instagramHandle: payload.instagramHandle.trim(),
     academyAddress: payload.academyAddress.trim(),
     googleMapsEmbed: payload.googleMapsEmbed.trim(),
-    schedules: normalizedSchedules
+    ...(hasSchedules ? { schedules: normalizedSchedules } : {})
   };
 }
