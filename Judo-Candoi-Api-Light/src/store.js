@@ -1,6 +1,11 @@
 ﻿import fs from "node:fs";
 import path from "node:path";
-import { createDefaultSiteSettings, STATIC_SCHEDULES } from "./defaults.js";
+import {
+  createDefaultSiteSettings,
+  STATIC_GALLERY,
+  STATIC_SCHEDULES,
+  STATIC_TESTIMONIALS
+} from "./defaults.js";
 
 function nowIso() {
   return new Date().toISOString();
@@ -54,6 +59,14 @@ function cloneScheduleItems(schedules) {
   return schedules.map((schedule) => ({ ...schedule }));
 }
 
+function cloneGalleryItems(gallery) {
+  return gallery.map((item) => ({ ...item }));
+}
+
+function cloneTestimonialItems(testimonials) {
+  return testimonials.map((item) => ({ ...item }));
+}
+
 function normalizeScheduleItems(value) {
   const normalized = asArray(value)
     .map((schedule) => ({
@@ -64,6 +77,46 @@ function normalizeScheduleItems(value) {
     .filter((schedule) => schedule.day && schedule.time && schedule.audience);
 
   return normalized.length > 0 ? normalized : cloneScheduleItems(STATIC_SCHEDULES);
+}
+
+function normalizeGalleryItems(value) {
+  if (!Array.isArray(value)) {
+    return cloneGalleryItems(STATIC_GALLERY);
+  }
+
+  return value
+    .map((item, index) => ({
+      title:
+        typeof item?.title === "string" && item.title.trim().length > 0
+          ? item.title.trim()
+          : `Registro de atleta ${String(index + 1).padStart(2, "0")}`,
+      imageUrl: typeof item?.imageUrl === "string" ? item.imageUrl.trim() : "",
+      category:
+        typeof item?.category === "string" && item.category.trim().length > 0
+          ? item.category.trim()
+          : "Atletas"
+    }))
+    .filter((item) => item.imageUrl.length > 0);
+}
+
+function normalizeTestimonialItems(value) {
+  if (!Array.isArray(value)) {
+    return cloneTestimonialItems(STATIC_TESTIMONIALS);
+  }
+
+  return value
+    .map((item, index) => ({
+      quote: typeof item?.quote === "string" ? item.quote.trim() : "",
+      author:
+        typeof item?.author === "string" && item.author.trim().length > 0
+          ? item.author.trim()
+          : `Aluno ${index + 1}`,
+      role:
+        typeof item?.role === "string" && item.role.trim().length > 0
+          ? item.role.trim()
+          : "Comunidade Judo Candoi"
+    }))
+    .filter((item) => item.quote.length > 0);
 }
 
 function computeNextId(items) {
@@ -110,7 +163,9 @@ function normalizeState(rawState, config) {
 
   state.siteSettings = {
     ...state.siteSettings,
-    schedules: normalizeScheduleItems(state.siteSettings.schedules)
+    schedules: normalizeScheduleItems(state.siteSettings.schedules),
+    gallery: normalizeGalleryItems(state.siteSettings.gallery),
+    testimonials: normalizeTestimonialItems(state.siteSettings.testimonials)
   };
 
   state.counters.lead = Math.max(

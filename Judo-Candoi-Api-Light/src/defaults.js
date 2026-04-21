@@ -31,7 +31,9 @@ export function createDefaultSiteSettings(config) {
     instagramHandle: config.defaultInstagramHandle,
     academyAddress: config.defaultAcademyAddress,
     googleMapsEmbed: config.defaultGoogleMapsEmbed,
-    schedules: STATIC_SCHEDULES.map((schedule) => ({ ...schedule }))
+    schedules: STATIC_SCHEDULES.map((schedule) => ({ ...schedule })),
+    gallery: STATIC_GALLERY.map((item) => ({ ...item })),
+    testimonials: STATIC_TESTIMONIALS.map((item) => ({ ...item }))
   };
 }
 

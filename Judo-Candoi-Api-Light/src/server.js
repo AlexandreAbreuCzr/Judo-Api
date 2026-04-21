@@ -159,7 +159,9 @@ function toSiteSettingsAdminResponse(settings) {
     instagramHandle: settings.instagramHandle,
     academyAddress: settings.academyAddress,
     googleMapsEmbed: settings.googleMapsEmbed,
-    schedules: settings.schedules
+    schedules: settings.schedules,
+    gallery: Array.isArray(settings.gallery) ? settings.gallery : [],
+    testimonials: Array.isArray(settings.testimonials) ? settings.testimonials : []
   };
 }
 

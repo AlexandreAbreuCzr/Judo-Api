@@ -150,6 +150,116 @@ function validateScheduleItems(errors, payload) {
   });
 }
 
+function validateGalleryItems(errors, payload) {
+  const gallery = payload.gallery;
+
+  if (gallery === undefined) {
+    return undefined;
+  }
+
+  if (!Array.isArray(gallery)) {
+    addError(errors, "gallery", "Galeria invalida");
+    return [];
+  }
+
+  if (gallery.length > 80) {
+    addError(errors, "gallery", "Informe no maximo 80 imagens na galeria");
+  }
+
+  return gallery.map((item, index) => {
+    const normalized = isObject(item)
+      ? {
+          title: toTrimmedString(item.title),
+          imageUrl: toTrimmedString(item.imageUrl),
+          category: toTrimmedString(item.category)
+        }
+      : {
+          title: "",
+          imageUrl: "",
+          category: ""
+        };
+
+    if (!normalized.imageUrl) {
+      addError(errors, `gallery[${index}].imageUrl`, "Imagem da galeria e obrigatoria");
+    } else if (normalized.imageUrl.length > 2000) {
+      addError(errors, `gallery[${index}].imageUrl`, "URL da imagem deve ter no maximo 2000 caracteres");
+    }
+
+    if (normalized.title.length > 140) {
+      addError(errors, `gallery[${index}].title`, "Titulo da imagem deve ter no maximo 140 caracteres");
+    }
+
+    if (normalized.category.length > 80) {
+      addError(
+        errors,
+        `gallery[${index}].category`,
+        "Categoria da imagem deve ter no maximo 80 caracteres"
+      );
+    }
+
+    return {
+      title: normalized.title || `Registro de atleta ${String(index + 1).padStart(2, "0")}`,
+      imageUrl: normalized.imageUrl,
+      category: normalized.category || "Atletas"
+    };
+  });
+}
+
+function validateTestimonialItems(errors, payload) {
+  const testimonials = payload.testimonials;
+
+  if (testimonials === undefined) {
+    return undefined;
+  }
+
+  if (!Array.isArray(testimonials)) {
+    addError(errors, "testimonials", "Lista de depoimentos invalida");
+    return [];
+  }
+
+  if (testimonials.length > 40) {
+    addError(errors, "testimonials", "Informe no maximo 40 depoimentos");
+  }
+
+  return testimonials.map((item, index) => {
+    const normalized = isObject(item)
+      ? {
+          quote: toTrimmedString(item.quote),
+          author: toTrimmedString(item.author),
+          role: toTrimmedString(item.role)
+        }
+      : {
+          quote: "",
+          author: "",
+          role: ""
+        };
+
+    if (!normalized.quote) {
+      addError(errors, `testimonials[${index}].quote`, "Texto do depoimento e obrigatorio");
+    } else if (normalized.quote.length > 1200) {
+      addError(
+        errors,
+        `testimonials[${index}].quote`,
+        "Texto do depoimento deve ter no maximo 1200 caracteres"
+      );
+    }
+
+    if (normalized.author.length > 120) {
+      addError(errors, `testimonials[${index}].author`, "Autor deve ter no maximo 120 caracteres");
+    }
+
+    if (normalized.role.length > 120) {
+      addError(errors, `testimonials[${index}].role`, "Relacao/cargo deve ter no maximo 120 caracteres");
+    }
+
+    return {
+      quote: normalized.quote,
+      author: normalized.author || `Aluno ${index + 1}`,
+      role: normalized.role || "Comunidade Judo Candoi"
+    };
+  });
+}
+
 function assertPayloadObject(payload) {
   if (!isObject(payload)) {
     throw badRequest("Corpo da requisicao invalido.", "JSON invalido");
@@ -607,6 +717,8 @@ export function validateSiteSettingsUpdatePayload(payload) {
   );
 
   const schedules = validateScheduleItems(errors, payload);
+  const gallery = validateGalleryItems(errors, payload);
+  const testimonials = validateTestimonialItems(errors, payload);
 
   throwValidationIfNeeded(errors);
 
@@ -636,6 +748,8 @@ export function validateSiteSettingsUpdatePayload(payload) {
     instagramHandle: payload.instagramHandle.trim(),
     academyAddress: payload.academyAddress.trim(),
     googleMapsEmbed: payload.googleMapsEmbed.trim(),
-    schedules
+    schedules,
+    ...(gallery !== undefined ? { gallery } : {}),
+    ...(testimonials !== undefined ? { testimonials } : {})
   };
 }
