@@ -4,7 +4,6 @@ const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const PHONE_PATTERN = /^[0-9+()\-\s]{8,20}$/;
 
 const DEFAULT_OBJECTIVE = "Aula experimental";
-const MAX_SITE_SCHEDULE_ITEMS = 12;
 
 function isObject(value) {
   return value !== null && typeof value === "object" && !Array.isArray(value);
@@ -109,90 +108,162 @@ function validateOptionalInteger(errors, payload, field) {
   }
 }
 
+function validateScheduleItems(errors, payload) {
+  const schedules = payload.schedules;
+
+  if (!Array.isArray(schedules) || schedules.length === 0) {
+    addError(errors, "schedules", "Informe ao menos um horario de treino");
+    return [];
+  }
+
+  if (schedules.length > 20) {
+    addError(errors, "schedules", "Informe no maximo 20 horarios de treino");
+  }
+
+  return schedules.map((schedule, index) => {
+    const item = isObject(schedule) ? schedule : {};
+    const normalized = {
+      day: toTrimmedString(item.day),
+      time: toTrimmedString(item.time),
+      audience: toTrimmedString(item.audience)
+    };
+
+    if (!normalized.day) {
+      addError(errors, `schedules[${index}].day`, "Dia do treino e obrigatorio");
+    } else if (normalized.day.length > 80) {
+      addError(errors, `schedules[${index}].day`, "Dia do treino deve ter no maximo 80 caracteres");
+    }
+
+    if (!normalized.time) {
+      addError(errors, `schedules[${index}].time`, "Horario do treino e obrigatorio");
+    } else if (normalized.time.length > 40) {
+      addError(errors, `schedules[${index}].time`, "Horario do treino deve ter no maximo 40 caracteres");
+    }
+
+    if (!normalized.audience) {
+      addError(errors, `schedules[${index}].audience`, "Turma do treino e obrigatoria");
+    } else if (normalized.audience.length > 80) {
+      addError(errors, `schedules[${index}].audience`, "Turma do treino deve ter no maximo 80 caracteres");
+    }
+
+    return normalized;
+  });
+}
+
+function validateGalleryItems(errors, payload) {
+  const gallery = payload.gallery;
+
+  if (gallery === undefined) {
+    return undefined;
+  }
+
+  if (!Array.isArray(gallery)) {
+    addError(errors, "gallery", "Galeria invalida");
+    return [];
+  }
+
+  if (gallery.length > 80) {
+    addError(errors, "gallery", "Informe no maximo 80 imagens na galeria");
+  }
+
+  return gallery.map((item, index) => {
+    const normalized = isObject(item)
+      ? {
+          title: toTrimmedString(item.title),
+          imageUrl: toTrimmedString(item.imageUrl),
+          category: toTrimmedString(item.category)
+        }
+      : {
+          title: "",
+          imageUrl: "",
+          category: ""
+        };
+
+    if (!normalized.imageUrl) {
+      addError(errors, `gallery[${index}].imageUrl`, "Imagem da galeria e obrigatoria");
+    } else if (normalized.imageUrl.length > 2000) {
+      addError(errors, `gallery[${index}].imageUrl`, "URL da imagem deve ter no maximo 2000 caracteres");
+    }
+
+    if (normalized.title.length > 140) {
+      addError(errors, `gallery[${index}].title`, "Titulo da imagem deve ter no maximo 140 caracteres");
+    }
+
+    if (normalized.category.length > 80) {
+      addError(
+        errors,
+        `gallery[${index}].category`,
+        "Categoria da imagem deve ter no maximo 80 caracteres"
+      );
+    }
+
+    return {
+      title: normalized.title || `Registro de atleta ${String(index + 1).padStart(2, "0")}`,
+      imageUrl: normalized.imageUrl,
+      category: normalized.category || "Atletas"
+    };
+  });
+}
+
+function validateTestimonialItems(errors, payload) {
+  const testimonials = payload.testimonials;
+
+  if (testimonials === undefined) {
+    return undefined;
+  }
+
+  if (!Array.isArray(testimonials)) {
+    addError(errors, "testimonials", "Lista de depoimentos invalida");
+    return [];
+  }
+
+  if (testimonials.length > 40) {
+    addError(errors, "testimonials", "Informe no maximo 40 depoimentos");
+  }
+
+  return testimonials.map((item, index) => {
+    const normalized = isObject(item)
+      ? {
+          quote: toTrimmedString(item.quote),
+          author: toTrimmedString(item.author),
+          role: toTrimmedString(item.role)
+        }
+      : {
+          quote: "",
+          author: "",
+          role: ""
+        };
+
+    if (!normalized.quote) {
+      addError(errors, `testimonials[${index}].quote`, "Texto do depoimento e obrigatorio");
+    } else if (normalized.quote.length > 1200) {
+      addError(
+        errors,
+        `testimonials[${index}].quote`,
+        "Texto do depoimento deve ter no maximo 1200 caracteres"
+      );
+    }
+
+    if (normalized.author.length > 120) {
+      addError(errors, `testimonials[${index}].author`, "Autor deve ter no maximo 120 caracteres");
+    }
+
+    if (normalized.role.length > 120) {
+      addError(errors, `testimonials[${index}].role`, "Relacao/cargo deve ter no maximo 120 caracteres");
+    }
+
+    return {
+      quote: normalized.quote,
+      author: normalized.author || `Aluno ${index + 1}`,
+      role: normalized.role || "Comunidade Judo Candoi"
+    };
+  });
+}
+
 function assertPayloadObject(payload) {
   if (!isObject(payload)) {
     throw badRequest("Corpo da requisicao invalido.", "JSON invalido");
   }
-}
-
-function validateSiteSchedulesField(errors, payload) {
-  const schedules = payload.schedules;
-
-  if (schedules === undefined || schedules === null) {
-    return {
-      hasSchedules: false,
-      normalizedSchedules: []
-    };
-  }
-
-  if (!Array.isArray(schedules) || schedules.length === 0) {
-    addError(errors, "schedules", "Lista de treinos e obrigatoria");
-    return {
-      hasSchedules: true,
-      normalizedSchedules: []
-    };
-  }
-
-  if (schedules.length > MAX_SITE_SCHEDULE_ITEMS) {
-    addError(
-      errors,
-      "schedules",
-      `Lista de treinos deve ter no maximo ${MAX_SITE_SCHEDULE_ITEMS} itens`
-    );
-  }
-
-  const normalizedSchedules = [];
-
-  for (let index = 0; index < schedules.length; index += 1) {
-    const item = schedules[index];
-    const itemPath = `schedules[${index}]`;
-
-    if (!isObject(item)) {
-      addError(errors, itemPath, "Item de treino invalido");
-      continue;
-    }
-
-    const day = toTrimmedString(item.day);
-    const time = toTrimmedString(item.time);
-    const audience = toTrimmedString(item.audience);
-    const level = toTrimmedString(item.level);
-
-    if (day.length === 0) {
-      addError(errors, `${itemPath}.day`, "Dia e obrigatorio");
-    } else if (day.length > 80) {
-      addError(errors, `${itemPath}.day`, "Dia deve ter no maximo 80 caracteres");
-    }
-
-    if (time.length === 0) {
-      addError(errors, `${itemPath}.time`, "Horario e obrigatorio");
-    } else if (time.length > 80) {
-      addError(errors, `${itemPath}.time`, "Horario deve ter no maximo 80 caracteres");
-    }
-
-    if (audience.length === 0) {
-      addError(errors, `${itemPath}.audience`, "Turma e obrigatoria");
-    } else if (audience.length > 100) {
-      addError(errors, `${itemPath}.audience`, "Turma deve ter no maximo 100 caracteres");
-    }
-
-    if (level.length === 0) {
-      addError(errors, `${itemPath}.level`, "Nivel e obrigatorio");
-    } else if (level.length > 100) {
-      addError(errors, `${itemPath}.level`, "Nivel deve ter no maximo 100 caracteres");
-    }
-
-    normalizedSchedules.push({
-      day,
-      time,
-      audience,
-      level
-    });
-  }
-
-  return {
-    hasSchedules: true,
-    normalizedSchedules
-  };
 }
 
 export function parsePositiveId(rawId) {
@@ -441,7 +512,6 @@ export function validateSiteSettingsUpdatePayload(payload) {
   assertPayloadObject(payload);
 
   const errors = {};
-  const { hasSchedules, normalizedSchedules } = validateSiteSchedulesField(errors, payload);
 
   validateRequiredText(
     errors,
@@ -646,6 +716,10 @@ export function validateSiteSettingsUpdatePayload(payload) {
     "Link do mapa deve ter no maximo 600 caracteres"
   );
 
+  const schedules = validateScheduleItems(errors, payload);
+  const gallery = validateGalleryItems(errors, payload);
+  const testimonials = validateTestimonialItems(errors, payload);
+
   throwValidationIfNeeded(errors);
 
   return {
@@ -674,6 +748,8 @@ export function validateSiteSettingsUpdatePayload(payload) {
     instagramHandle: payload.instagramHandle.trim(),
     academyAddress: payload.academyAddress.trim(),
     googleMapsEmbed: payload.googleMapsEmbed.trim(),
-    ...(hasSchedules ? { schedules: normalizedSchedules } : {})
+    schedules,
+    ...(gallery !== undefined ? { gallery } : {}),
+    ...(testimonials !== undefined ? { testimonials } : {})
   };
 }

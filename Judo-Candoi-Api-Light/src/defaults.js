@@ -31,7 +31,9 @@ export function createDefaultSiteSettings(config) {
     instagramHandle: config.defaultInstagramHandle,
     academyAddress: config.defaultAcademyAddress,
     googleMapsEmbed: config.defaultGoogleMapsEmbed,
-    schedules: STATIC_SCHEDULES.map((item) => ({ ...item }))
+    schedules: STATIC_SCHEDULES.map((schedule) => ({ ...schedule })),
+    gallery: STATIC_GALLERY.map((item) => ({ ...item })),
+    testimonials: STATIC_TESTIMONIALS.map((item) => ({ ...item }))
   };
 }
 
@@ -123,27 +125,28 @@ export const STATIC_TESTIMONIALS = [
 export const STATIC_SCHEDULES = [
   {
     day: "Segunda e Quarta",
-    time: "18:00 - 18:50",
-    audience: "Infantil",
-    level: "Iniciante"
-  },
-  {
-    day: "Segunda e Quarta",
-    time: "19:00 - 20:00",
-    audience: "Juvenil",
-    level: "Intermediario"
+    time: "17:30 - 18:30",
+    audience: "Infantil"
   },
   {
     day: "Terca e Quinta",
-    time: "19:30 - 20:30",
-    audience: "Adulto",
-    level: "Iniciante e avancado"
+    time: "18:00 - 19:00",
+    audience: "Adolescente"
+  },
+  {
+    day: "Terca e Quinta",
+    time: "19:00 - 20:00",
+    audience: "Adultos"
+  },
+  {
+    day: "Terca",
+    time: "17:10",
+    audience: "Baby"
   },
   {
     day: "Sexta",
-    time: "18:30 - 20:00",
-    audience: "Equipe de competicao",
-    level: "Avancado"
+    time: "17:30",
+    audience: "Baby"
   }
 ];
 

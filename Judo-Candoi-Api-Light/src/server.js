@@ -26,6 +26,11 @@ const store = new JsonStore(config);
 store.load();
 fs.mkdirSync(config.uploadDirPath, { recursive: true });
 
+if (config.isRenderEnvironment) {
+  console.log(`[persistencia] DB_FILE: ${config.dbFilePath}`);
+  console.log(`[persistencia] UPLOAD_DIR: ${config.uploadDirPath}`);
+}
+
 const corsOptions = {
   origin(origin, callback) {
     if (!origin) {
@@ -154,14 +159,9 @@ function toSiteSettingsAdminResponse(settings) {
     instagramHandle: settings.instagramHandle,
     academyAddress: settings.academyAddress,
     googleMapsEmbed: settings.googleMapsEmbed,
-    schedules: Array.isArray(settings.schedules)
-      ? settings.schedules.map((item) => ({
-          day: item.day,
-          time: item.time,
-          audience: item.audience,
-          level: item.level
-        }))
-      : []
+    schedules: settings.schedules,
+    gallery: Array.isArray(settings.gallery) ? settings.gallery : [],
+    testimonials: Array.isArray(settings.testimonials) ? settings.testimonials : []
   };
 }
 

@@ -41,21 +41,82 @@ function normalizePrideStudent(student) {
   };
 }
 
-function normalizeScheduleItem(item) {
+function normalizeSchedule(schedule) {
   return {
-    day: typeof item?.day === "string" ? item.day : "",
-    time: typeof item?.time === "string" ? item.time : "",
-    audience: typeof item?.audience === "string" ? item.audience : "",
-    level: typeof item?.level === "string" ? item.level : ""
+    day: typeof schedule?.day === "string" ? schedule.day.trim() : "",
+    time: typeof schedule?.time === "string" ? schedule.time.trim() : "",
+    audience: typeof schedule?.audience === "string" ? schedule.audience.trim() : ""
   };
 }
 
-function resolveSchedules(settings) {
-  if (!Array.isArray(settings?.schedules) || settings.schedules.length === 0) {
-    return STATIC_SCHEDULES.map((item) => ({ ...item }));
+function normalizeSchedules(schedules) {
+  const normalized = Array.isArray(schedules)
+    ? schedules
+        .map(normalizeSchedule)
+        .filter((schedule) => schedule.day && schedule.time && schedule.audience)
+    : [];
+
+  if (normalized.length > 0) {
+    return normalized;
   }
 
-  return settings.schedules.map(normalizeScheduleItem);
+  return STATIC_SCHEDULES.map(normalizeSchedule);
+}
+
+function normalizeGalleryItem(item, index) {
+  const imageUrl = typeof item?.imageUrl === "string" ? item.imageUrl.trim() : "";
+
+  if (!imageUrl) {
+    return null;
+  }
+
+  return {
+    title:
+      typeof item?.title === "string" && item.title.trim().length > 0
+        ? item.title.trim()
+        : `Registro de atleta ${String(index + 1).padStart(2, "0")}`,
+    imageUrl,
+    category:
+      typeof item?.category === "string" && item.category.trim().length > 0
+        ? item.category.trim()
+        : "Atletas"
+  };
+}
+
+function normalizeGallery(gallery) {
+  if (!Array.isArray(gallery)) {
+    return STATIC_GALLERY.map((item, index) => normalizeGalleryItem(item, index)).filter(Boolean);
+  }
+
+  return gallery.map(normalizeGalleryItem).filter(Boolean);
+}
+
+function normalizeTestimonial(item, index) {
+  const quote = typeof item?.quote === "string" ? item.quote.trim() : "";
+
+  if (!quote) {
+    return null;
+  }
+
+  return {
+    quote,
+    author:
+      typeof item?.author === "string" && item.author.trim().length > 0
+        ? item.author.trim()
+        : `Aluno ${index + 1}`,
+    role:
+      typeof item?.role === "string" && item.role.trim().length > 0
+        ? item.role.trim()
+        : "Comunidade Judo Candoi"
+  };
+}
+
+function normalizeTestimonials(testimonials) {
+  if (!Array.isArray(testimonials)) {
+    return STATIC_TESTIMONIALS.map((item, index) => normalizeTestimonial(item, index)).filter(Boolean);
+  }
+
+  return testimonials.map(normalizeTestimonial).filter(Boolean);
 }
 
 export function buildSiteContent(settings, blogPosts, sponsors, prideStudents) {
@@ -91,11 +152,11 @@ export function buildSiteContent(settings, blogPosts, sponsors, prideStudents) {
     programs: STATIC_PROGRAMS,
     methodology: STATIC_METHODOLOGY,
     achievements: STATIC_ACHIEVEMENTS,
-    gallery: STATIC_GALLERY,
-    testimonials: STATIC_TESTIMONIALS,
+    gallery: normalizeGallery(settings.gallery),
+    testimonials: normalizeTestimonials(settings.testimonials),
     trialTitle: settings.trialTitle,
     trialDescription: settings.trialDescription,
-    schedules: resolveSchedules(settings),
+    schedules: normalizeSchedules(settings.schedules),
     blogPosts: blogPosts.map(normalizeBlogPost),
     sponsors: sponsors.map(normalizeSponsor),
     timeline: STATIC_TIMELINE,

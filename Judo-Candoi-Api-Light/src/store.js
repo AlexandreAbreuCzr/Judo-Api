@@ -1,6 +1,11 @@
 ﻿import fs from "node:fs";
 import path from "node:path";
-import { createDefaultSiteSettings } from "./defaults.js";
+import {
+  createDefaultSiteSettings,
+  STATIC_GALLERY,
+  STATIC_SCHEDULES,
+  STATIC_TESTIMONIALS
+} from "./defaults.js";
 
 function nowIso() {
   return new Date().toISOString();
@@ -50,6 +55,70 @@ function asArray(value) {
   return Array.isArray(value) ? value : [];
 }
 
+function cloneScheduleItems(schedules) {
+  return schedules.map((schedule) => ({ ...schedule }));
+}
+
+function cloneGalleryItems(gallery) {
+  return gallery.map((item) => ({ ...item }));
+}
+
+function cloneTestimonialItems(testimonials) {
+  return testimonials.map((item) => ({ ...item }));
+}
+
+function normalizeScheduleItems(value) {
+  const normalized = asArray(value)
+    .map((schedule) => ({
+      day: typeof schedule?.day === "string" ? schedule.day.trim() : "",
+      time: typeof schedule?.time === "string" ? schedule.time.trim() : "",
+      audience: typeof schedule?.audience === "string" ? schedule.audience.trim() : ""
+    }))
+    .filter((schedule) => schedule.day && schedule.time && schedule.audience);
+
+  return normalized.length > 0 ? normalized : cloneScheduleItems(STATIC_SCHEDULES);
+}
+
+function normalizeGalleryItems(value) {
+  if (!Array.isArray(value)) {
+    return cloneGalleryItems(STATIC_GALLERY);
+  }
+
+  return value
+    .map((item, index) => ({
+      title:
+        typeof item?.title === "string" && item.title.trim().length > 0
+          ? item.title.trim()
+          : `Registro de atleta ${String(index + 1).padStart(2, "0")}`,
+      imageUrl: typeof item?.imageUrl === "string" ? item.imageUrl.trim() : "",
+      category:
+        typeof item?.category === "string" && item.category.trim().length > 0
+          ? item.category.trim()
+          : "Atletas"
+    }))
+    .filter((item) => item.imageUrl.length > 0);
+}
+
+function normalizeTestimonialItems(value) {
+  if (!Array.isArray(value)) {
+    return cloneTestimonialItems(STATIC_TESTIMONIALS);
+  }
+
+  return value
+    .map((item, index) => ({
+      quote: typeof item?.quote === "string" ? item.quote.trim() : "",
+      author:
+        typeof item?.author === "string" && item.author.trim().length > 0
+          ? item.author.trim()
+          : `Aluno ${index + 1}`,
+      role:
+        typeof item?.role === "string" && item.role.trim().length > 0
+          ? item.role.trim()
+          : "Comunidade Judo Candoi"
+    }))
+    .filter((item) => item.quote.length > 0);
+}
+
 function computeNextId(items) {
   if (!Array.isArray(items) || items.length === 0) {
     return 1;
@@ -71,19 +140,16 @@ function computeNextId(items) {
 function normalizeState(rawState, config) {
   const initialState = createInitialState(config);
   const parsed = rawState && typeof rawState === "object" ? rawState : {};
-  const parsedSiteSettings =
-    parsed.siteSettings && typeof parsed.siteSettings === "object" ? parsed.siteSettings : {};
-  const mergedSiteSettings = {
-    ...initialState.siteSettings,
-    ...parsedSiteSettings
-  };
 
   const state = {
     counters: {
       ...initialState.counters,
       ...(parsed.counters && typeof parsed.counters === "object" ? parsed.counters : {})
     },
-    siteSettings: mergedSiteSettings,
+    siteSettings:
+      parsed.siteSettings && typeof parsed.siteSettings === "object"
+        ? parsed.siteSettings
+        : initialState.siteSettings,
     leads: asArray(parsed.leads),
     blogPosts: asArray(parsed.blogPosts),
     prideStudents: asArray(parsed.prideStudents),
@@ -94,6 +160,13 @@ function normalizeState(rawState, config) {
   if (!state.siteSettings?.id) {
     state.siteSettings = initialState.siteSettings;
   }
+
+  state.siteSettings = {
+    ...state.siteSettings,
+    schedules: normalizeScheduleItems(state.siteSettings.schedules),
+    gallery: normalizeGalleryItems(state.siteSettings.gallery),
+    testimonials: normalizeTestimonialItems(state.siteSettings.testimonials)
+  };
 
   state.counters.lead = Math.max(
     Number.parseInt(state.counters.lead, 10) || 1,
