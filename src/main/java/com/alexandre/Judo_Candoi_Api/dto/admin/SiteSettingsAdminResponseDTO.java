@@ -1,5 +1,11 @@
 package com.alexandre.Judo_Candoi_Api.dto.admin;
 
+import com.alexandre.Judo_Candoi_Api.dto.site.GalleryItemDTO;
+import com.alexandre.Judo_Candoi_Api.dto.site.ScheduleItemDTO;
+import com.alexandre.Judo_Candoi_Api.dto.site.TestimonialDTO;
+
+import java.util.List;
+
 public record SiteSettingsAdminResponseDTO(
         Long id,
         String brandName,
@@ -26,6 +32,9 @@ public record SiteSettingsAdminResponseDTO(
         String whatsappNumber,
         String instagramHandle,
         String academyAddress,
-        String googleMapsEmbed
+        String googleMapsEmbed,
+        List<ScheduleItemDTO> schedules,
+        List<GalleryItemDTO> gallery,
+        List<TestimonialDTO> testimonials
 ) {
 }

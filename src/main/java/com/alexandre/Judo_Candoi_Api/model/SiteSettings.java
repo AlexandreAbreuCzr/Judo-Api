@@ -87,6 +87,15 @@ public class SiteSettings {
     @Column(nullable = false, length = 600)
     private String googleMapsEmbed;
 
+    @Column(length = 4000)
+    private String schedulesJson;
+
+    @Lob
+    private String galleryJson;
+
+    @Lob
+    private String testimonialsJson;
+
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -121,7 +130,10 @@ public class SiteSettings {
             String whatsappNumber,
             String instagramHandle,
             String academyAddress,
-            String googleMapsEmbed
+            String googleMapsEmbed,
+            String schedulesJson,
+            String galleryJson,
+            String testimonialsJson
     ) {
         this.brandName = brandName;
         this.heroTitle = heroTitle;
@@ -148,6 +160,9 @@ public class SiteSettings {
         this.instagramHandle = instagramHandle;
         this.academyAddress = academyAddress;
         this.googleMapsEmbed = googleMapsEmbed;
+        this.schedulesJson = schedulesJson;
+        this.galleryJson = galleryJson;
+        this.testimonialsJson = testimonialsJson;
     }
 
     @PrePersist
@@ -266,6 +281,18 @@ public class SiteSettings {
         return googleMapsEmbed;
     }
 
+    public String getSchedulesJson() {
+        return schedulesJson;
+    }
+
+    public String getGalleryJson() {
+        return galleryJson;
+    }
+
+    public String getTestimonialsJson() {
+        return testimonialsJson;
+    }
+
     public void update(
             String brandName,
             String heroTitle,
@@ -291,7 +318,10 @@ public class SiteSettings {
             String whatsappNumber,
             String instagramHandle,
             String academyAddress,
-            String googleMapsEmbed
+            String googleMapsEmbed,
+            String schedulesJson,
+            String galleryJson,
+            String testimonialsJson
     ) {
         this.brandName = brandName;
         this.heroTitle = heroTitle;
@@ -318,5 +348,8 @@ public class SiteSettings {
         this.instagramHandle = instagramHandle;
         this.academyAddress = academyAddress;
         this.googleMapsEmbed = googleMapsEmbed;
+        this.schedulesJson = schedulesJson;
+        this.galleryJson = galleryJson;
+        this.testimonialsJson = testimonialsJson;
     }
 }
