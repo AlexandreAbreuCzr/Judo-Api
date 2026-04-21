@@ -90,17 +90,8 @@ public class SiteContentService {
                         new AchievementDTO("Evolucao comportamental", "Pais relatam mais disciplina e confianca em casa e na escola"),
                         new AchievementDTO("Podios e destaque tecnico", "Atletas preparados para competir sem perder a essencia educativa")
                 ),
-                List.of(
-                        new GalleryItemDTO("Treino tecnico no tatame", "/images/site/aula-correcao-tecnica-3x2.jpg", "Treinos"),
-                        new GalleryItemDTO("Dia de campeonato", "/images/site/competicao-podio-16x9.jpg", "Campeonatos"),
-                        new GalleryItemDTO("Equipe no podio", "/images/site/tecnica-graduacao-16x10.jpg", "Conquistas"),
-                        new GalleryItemDTO("Treino de campo", "/images/site/treino-campo-16x9.jpg", "Treinos")
-                ),
-                List.of(
-                        new TestimonialDTO("Depois do judo, meu filho ficou mais disciplinado e confiante.", "Marina S.", "Mae de aluno infantil"),
-                        new TestimonialDTO("Aqui nao e so esporte, e educacao.", "Carlos A.", "Pai de atleta juvenil"),
-                        new TestimonialDTO("O Judo Candoi mudou minha forma de encarar desafios.", "Lucas M.", "Aluno adulto")
-                ),
+                siteSettingsService.resolveGallery(settings),
+                siteSettingsService.resolveTestimonials(settings),
                 settings.getTrialTitle(),
                 settings.getTrialDescription(),
                 siteSettingsService.resolveSchedules(settings),

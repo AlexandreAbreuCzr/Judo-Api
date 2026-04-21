@@ -1,6 +1,8 @@
 package com.alexandre.Judo_Candoi_Api.dto.admin;
 
+import com.alexandre.Judo_Candoi_Api.dto.site.GalleryItemDTO;
 import com.alexandre.Judo_Candoi_Api.dto.site.ScheduleItemDTO;
+import com.alexandre.Judo_Candoi_Api.dto.site.TestimonialDTO;
 
 import java.util.List;
 
@@ -31,6 +33,8 @@ public record SiteSettingsAdminResponseDTO(
         String instagramHandle,
         String academyAddress,
         String googleMapsEmbed,
-        List<ScheduleItemDTO> schedules
+        List<ScheduleItemDTO> schedules,
+        List<GalleryItemDTO> gallery,
+        List<TestimonialDTO> testimonials
 ) {
 }
